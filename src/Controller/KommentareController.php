@@ -3,13 +3,19 @@
 namespace App\Controller;
 
 use App\DTO\CreateUpdateKommentare;
+use App\DTO\FilterKommentare;
 use App\DTO\Mapper\ShowKommentareMapper;
+use App\DTO\ShowKommentare;
 use App\Entity\Kommentare;
 use App\Repository\KommentareRepository;
 use App\Repository\ProduktRepository;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use JMS\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\RequestBody;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -38,6 +44,28 @@ class KommentareController extends AbstractFOSRestController
                                 private ProduktRepository $pRepository,
                                 private ValidatorInterface $validator){}
 
+
+    #[Get(requestBody: new RequestBody(
+        content: new JsonContent(
+            ref: new Model(
+                type: FilterKommentare::class
+            )
+        )
+    ))]
+    #[\OpenApi\Attributes\Response(
+        response: 200,
+        description: "gibt alle Kommentare inklusive deren Produkte an",
+        content:
+        new JsonContent(
+            type: 'array',
+            items: new Items(
+                ref: new Model(
+                    type: ShowKommentare::class
+                )
+            )
+        )
+    )]
+
     #[Rest\Get('/kommentare', name: 'app_kommentare_get')]
     public function kommentare_get(): JsonResponse
     {
@@ -46,6 +74,20 @@ class KommentareController extends AbstractFOSRestController
             'path' => 'src/Controller/KommentareController.php',
         ]);
     }
+
+    #[Post(
+        requestBody: new RequestBody(
+            content: new JsonContent(
+                ref: new Model(
+                    type: CreateUpdateKommentare::class,
+                    groups: ("create")
+                )
+            )
+        )
+    )]
+
+
+
     #[Rest\Post('/kommentare', name: 'app_kommentare_create')]
     public function kommentare_create(Request $request): JsonResponse
     {
