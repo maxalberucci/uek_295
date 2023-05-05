@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Controller\DTO;
+namespace App\DTO;
 
 class ShowKommentare
 {
-    private ?string $kommentare = null;
-    private ?int $rezensionen = null;
+    public ?string $kommentare = null;
+    public ?int $rezensionen = null;
 }

@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Controller\DTO\Mapper;
+namespace App\DTO\Mapper;
 
-use App\Controller\DTO\ShowKommentare;
-use App\DTO\Mapper\BaseMapper;
+use App\DTO\ShowKommentare;
 
 class ShowKommentareMapper extends BaseMapper
 {
+
+    public function __construct(private ShowKommentare $mapper)
+    {
+    }
 
     public function mapEntityToDTO(object $entity)
     {
