@@ -8,5 +8,5 @@ class ShowProdukt
     public ?float $preis = null;
     public ?int $bestand = null;
 
-    public $kommentare = [];
+    public  $kommentare = [];
 }

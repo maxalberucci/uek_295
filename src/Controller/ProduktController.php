@@ -2,8 +2,12 @@
 
 namespace App\Controller;
 
+use App\DTO\CreateUpdateArtikel;
 use App\DTO\CreateUpdateKommentare;
+use App\DTO\Mapper\ShowProduktMapper;
+use App\DTO\ShowProdukt;
 use App\Entity\Kommentare;
+use App\Entity\Produkt;
 use App\Repository\ProduktRepository;
 use http\Env\Request;
 use JMS\Serializer\SerializerInterface;
@@ -16,24 +20,26 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route("/api", name: "api_")]
 class ProduktController extends AbstractFOSRestController
 {
-    public function __construct(private SerializerInterface $serializer,
-                                private ProduktRepository $repository,
-                                protected ValidatorInterface $validator){
+    public function __construct(private SerializerInterface  $serializer,
+                                private ProduktRepository    $repository,
+                                protected ValidatorInterface $validator,
+                                private ShowProduktMapper    $mapper){
 
     }
 
     #[Rest\Get('/produkt', name: 'app_produkt')]
-    public function index(): JsonResponse
+    public function getProdukte(): JsonResponse
     {
-        return $this->json([
-            'message' => '1!',
-            'path' => 'src/Controller/ProduktController.php',
-        ]);
+        $allProdukte = $this->repository->findAll();
+
+        return (new JsonResponse())->setContent(
+            $this->serializer->serialize($this->mapper->mapEntitiesToDTOS($allProdukte),"json")
+        );
     }
 
-    public function create(Request $request): JsonResponse
+    public function create(\Symfony\Component\HttpFoundation\Request $request): JsonResponse
     {
-        $dto = $this->serializer->deserialize($request->getContent(), get_class());
+        $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateArtikel::class, 'json');
         $erros = $this->validator->validate($dto, groups: ["create"]);
 
         if ($erros->count() > 0){
@@ -54,9 +60,9 @@ class ProduktController extends AbstractFOSRestController
 
         if($errorResponse) {return $errorResponse;}
 
-        $entity = new produkt();
+        $entity = new Produkt();
         $entity->setName($dto->name);
-        $entity->setRezensionen($dto->rezensionen);
+        $entity->setBestand($dto->rezensionen);
         $produkt = $this->pRepository->find($dto->produkt_id);
 
         $entity->setProdukt($produkt);
@@ -67,4 +73,19 @@ class ProduktController extends AbstractFOSRestController
             $this->serializer->serialize($this->mapper->mapEntityToDTO($entity),"json")
         );
     }
+
+    #[Rest\Get('/produkt/{id}', name: 'app_produkt_show')]
+    public function show($id): JsonResponse
+    {
+        $produkt = $this->repository->find($id);
+
+        if (!$produkt) {
+            return $this->json(['message' => 'Product not found'], status: 404);
+        }
+
+        return (new JsonResponse())->setContent(
+            $this->serializer->serialize($this->mapper->mapEntityToDTO($produkt),"json")
+        );
+    }
+
 }
