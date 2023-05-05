@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\DTO\CreateUpdateKommentare;
+use App\Entity\Kommentare;
 use App\Repository\ProduktRepository;
 use http\Env\Request;
 use JMS\Serializer\SerializerInterface;
@@ -41,5 +43,28 @@ class ProduktController extends AbstractFOSRestController
             }
             return $this->json($errosStringArray, status: 400);
         }
+    }
+
+    #[Rest\Post('/produkt', name: 'app_produkt_create')]
+    public function produkt_create(\Symfony\Component\HttpFoundation\Request $request): JsonResponse
+    {
+        $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateKommentare::class, "json");
+
+        $errorResponse = $this->validateDTO($dto, "create");
+
+        if($errorResponse) {return $errorResponse;}
+
+        $entity = new produkt();
+        $entity->setName($dto->name);
+        $entity->setRezensionen($dto->rezensionen);
+        $produkt = $this->pRepository->find($dto->produkt_id);
+
+        $entity->setProdukt($produkt);
+
+        $this->repository->save($entity, true);
+
+        return (new JsonResponse())->setContent(
+            $this->serializer->serialize($this->mapper->mapEntityToDTO($entity),"json")
+        );
     }
 }
