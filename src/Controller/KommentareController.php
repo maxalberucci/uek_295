@@ -16,6 +16,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,16 +30,17 @@ class KommentareController extends AbstractFOSRestController
     /**
      * Validiert die datenübertragung
      */
-    private function validateDTO($dto, $group) {
+    private function validateDTO($dto, $group)
+    {
         $erros = $this->validator->validate($dto, groups: ["create"]);
 
 
         /**
          * Validierungsfehler mit JSON-Antwort der fehler ausgeben
          */
-        if ($erros->count() > 0){
+        if ($erros->count() > 0) {
             $errosStringArray = [];
-            foreach ($erros as $error){
+            foreach ($erros as $error) {
                 $errosStringArray[] = $error->getMessage();
             }
             return $this->json($errosStringArray, status: 400);
@@ -53,11 +55,14 @@ class KommentareController extends AbstractFOSRestController
      * @param ProduktRepository $pRepository
      * @param ValidatorInterface $validator
      */
-    public function __construct(private SerializerInterface $serializer,
+    public function __construct(private SerializerInterface  $serializer,
                                 private KommentareRepository $repository,
                                 private ShowKommentareMapper $mapper,
-                                private ProduktRepository $pRepository,
-                                private ValidatorInterface $validator){}
+                                private ProduktRepository    $pRepository,
+                                private ValidatorInterface   $validator,
+                                private LoggerInterface      $logger)
+    {
+    }
 
 
     /**
@@ -74,8 +79,7 @@ class KommentareController extends AbstractFOSRestController
     #[\OpenApi\Attributes\Response(
         response: 200,
         description: "gibt alle Kommentare inklusive deren Produkte an",
-        content:
-        new JsonContent(
+        content: new JsonContent(
             type: 'array',
             items: new Items(
                 ref: new Model(
@@ -84,14 +88,23 @@ class KommentareController extends AbstractFOSRestController
             )
         )
     )]
-
     #[Rest\Get('/kommentare', name: 'app_kommentare_get')]
-    public function kommentare_get(): JsonResponse
+    public function kommentare_get(Request $request): JsonResponse
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/KommentareController.php',
-        ]);
+        $this->logger->info("Kommentare get");
+
+        $dtoFilter = $this->serializer->deserialize(
+            $request->getContent(),
+            FilterKommentare::class, 'json'
+        );
+
+        $allProdukte = $this->repository->filterAll($dtoFilter) ?? [];
+
+
+        return (new JsonResponse())->setContent(
+            $this->serializer->serialize(
+                $this->mapper->mapEntitiesToDTOS($allProdukte),"json")
+        );
     }
 
     /**
@@ -115,7 +128,6 @@ class KommentareController extends AbstractFOSRestController
     #[Rest\Post('/kommentare', name: 'app_kommentare_create')]
     public function kommentare_create(Request $request): JsonResponse
     {
-
         $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateKommentare::class, "json");
 
         $errorResponse = $this->validateDTO($dto, "create");
@@ -125,9 +137,10 @@ class KommentareController extends AbstractFOSRestController
         $entity = new Kommentare();
         $entity->setKommentare($dto->kommentare);
         $entity->setRezensionen($dto->rezensionen);
-        $produkt = $this->pRepository->find($dto->produkt_id);
 
+        $produkt = $this->pRepository->find($dto->produkt_id);
         $entity->setProdukt($produkt);
+
 
         $this->repository->save($entity, true);
 

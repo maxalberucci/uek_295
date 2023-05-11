@@ -9,7 +9,6 @@ use App\DTO\ShowProdukt;
 use App\Entity\Kommentare;
 use App\Entity\Produkt;
 use App\Repository\ProduktRepository;
-use http\Env\Request;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,6 +26,10 @@ class ProduktController extends AbstractFOSRestController
 
     }
 
+    /**
+     * antwortet mit einer gescheiten antwort.
+     * @return JsonResponse
+     */
     #[Rest\Get('/produkt', name: 'app_produkt')]
     public function getProdukte(): JsonResponse
     {
@@ -35,9 +38,9 @@ class ProduktController extends AbstractFOSRestController
          */
         $allProdukte = $this->repository->findAll();
 
-        /**
-         * Produkt als JSON zurückgeben
-         */
+
+        // Produkt als JSON zurückgeben
+
         return (new JsonResponse())->setContent(
             $this->serializer->serialize($this->mapper->mapEntitiesToDTOS($allProdukte),"json")
         );

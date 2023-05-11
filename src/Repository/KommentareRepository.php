@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\DTO\FilterKommentare;
 use App\Entity\Kommentare;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -38,6 +39,20 @@ class KommentareRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function filterAll(?FilterKommentare $dtoFilter)
+    {
+        $qb = $this->createQueryBuilder("k");
+
+        if($dtoFilter?->kommentare){
+            $qb = $qb->andWhere("k.kommentare like:p")
+                ->setParameter("p", $dtoFilter->kommentare. "%");
+        }
+
+        if($dtoFilter?->orderby){
+            $qb->orderBy($dtoFilter->orderby, $dtoFilter->orderdirection ?? "ASC");
+        }
+}
 
 //    /**
 //     * @return Kommentare[] Returns an array of Kommentare objects
