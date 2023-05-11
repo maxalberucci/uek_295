@@ -30,8 +30,14 @@ class ProduktController extends AbstractFOSRestController
     #[Rest\Get('/produkt', name: 'app_produkt')]
     public function getProdukte(): JsonResponse
     {
+        /**
+         * alle Produkte abrufen
+         */
         $allProdukte = $this->repository->findAll();
 
+        /**
+         * Produkt als JSON zurückgeben
+         */
         return (new JsonResponse())->setContent(
             $this->serializer->serialize($this->mapper->mapEntitiesToDTOS($allProdukte),"json")
         );
@@ -39,9 +45,15 @@ class ProduktController extends AbstractFOSRestController
 
     public function create(\Symfony\Component\HttpFoundation\Request $request): JsonResponse
     {
+        /**
+         * erstellen eines neuen Produktes
+         */
         $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateArtikel::class, 'json');
         $erros = $this->validator->validate($dto, groups: ["create"]);
 
+        /**
+         * fehlermeldung zurückgeben bei fehler
+         */
         if ($erros->count() > 0){
             $errosStringArray = [];
             foreach ($erros as $error){
@@ -54,12 +66,21 @@ class ProduktController extends AbstractFOSRestController
     #[Rest\Post('/produkt', name: 'app_produkt_create')]
     public function produkt_create(\Symfony\Component\HttpFoundation\Request $request): JsonResponse
     {
+        /**
+         * Produk erstellen
+         */
         $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateKommentare::class, "json");
 
         $errorResponse = $this->validateDTO($dto, "create");
 
+        /**
+         * fehlermeldung bei fehler
+         */
         if($errorResponse) {return $errorResponse;}
 
+        /**
+         * neue produkt entity erstellen
+         */
         $entity = new Produkt();
         $entity->setName($dto->name);
         $entity->setBestand($dto->rezensionen);
@@ -77,8 +98,14 @@ class ProduktController extends AbstractFOSRestController
     #[Rest\Get('/produkt/{id}', name: 'app_produkt_show')]
     public function show($id): JsonResponse
     {
+        /**
+         * anhand ID Produkt abrufen
+         */
         $produkt = $this->repository->find($id);
 
+        /**
+         * Produkt nicht gefunden Fehlermeldung
+         */
         if (!$produkt) {
             return $this->json(['message' => 'Product not found'], status: 404);
         }
@@ -89,3 +116,4 @@ class ProduktController extends AbstractFOSRestController
     }
 
 }
+

@@ -26,9 +26,16 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class KommentareController extends AbstractFOSRestController
 {
 
+    /**
+     * Validiert die datenübertragung
+     */
     private function validateDTO($dto, $group) {
         $erros = $this->validator->validate($dto, groups: ["create"]);
 
+
+        /**
+         * Validierungsfehler mit JSON-Antwort der fehler ausgeben
+         */
         if ($erros->count() > 0){
             $errosStringArray = [];
             foreach ($erros as $error){
@@ -38,6 +45,14 @@ class KommentareController extends AbstractFOSRestController
         }
     }
 
+    /**
+     * Wichtige Injects
+     * @param SerializerInterface $serializer
+     * @param KommentareRepository $repository
+     * @param ShowKommentareMapper $mapper
+     * @param ProduktRepository $pRepository
+     * @param ValidatorInterface $validator
+     */
     public function __construct(private SerializerInterface $serializer,
                                 private KommentareRepository $repository,
                                 private ShowKommentareMapper $mapper,
@@ -45,6 +60,10 @@ class KommentareController extends AbstractFOSRestController
                                 private ValidatorInterface $validator){}
 
 
+    /**
+     * Ruft die Kommentare und zugehörigen Produkte auf
+     * @return JsonResponse
+     */
     #[Get(requestBody: new RequestBody(
         content: new JsonContent(
             ref: new Model(
@@ -75,6 +94,11 @@ class KommentareController extends AbstractFOSRestController
         ]);
     }
 
+    /**
+     * erstellen eines neuen Kommentar
+     * @param Request $request
+     * @return JsonResponse
+     */
     #[Post(
         requestBody: new RequestBody(
             content: new JsonContent(
@@ -91,6 +115,7 @@ class KommentareController extends AbstractFOSRestController
     #[Rest\Post('/kommentare', name: 'app_kommentare_create')]
     public function kommentare_create(Request $request): JsonResponse
     {
+
         $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateKommentare::class, "json");
 
         $errorResponse = $this->validateDTO($dto, "create");
@@ -110,26 +135,54 @@ class KommentareController extends AbstractFOSRestController
             $this->serializer->serialize($this->mapper->mapEntityToDTO($entity),"json")
         );
     }
+
+    /**
+     * Kommentar anhand von ID gelöscht
+     * @param $id
+     * @return JsonResponse
+     */
     #[Rest\Delete('/kommentare/{id}', name: 'app_kommentare_delete')]
     public function kommentare_delete($id): JsonResponse
     {
+        /**
+         * findet die entity die gelöscht werden sollte
+         */
         $entityToDelete = $this->repository->find($id);
 
+        /**
+         * überprüft ob entity gefunden wurde
+         */
         if(!$entityToDelete) {
             return $this->json("Kommentar mit ID {$id} wurde nicht gefunden");
         }
 
         $this->repository->remove($entityToDelete, true);
 
+        /**
+         * Nachricht falls löschen erfolgreich war
+         */
         return $this->json("{$entityToDelete->getKommentare()} wurde erfolgreich gelöscht");
     }
+
+    /**
+     * Mit ID ändern des kommentar
+     * @param $id
+     * @param Request $request
+     * @return JsonResponse
+     */
     #[Rest\Put('/kommentare/{id}', name: 'app_kommentare_update')]
     public function kommentare_update($id, Request $request): JsonResponse
     {
         $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateKommentare::class, "json");
 
+        /**
+         * finden durch ID entity die aktualisiert wird
+         */
         $entityToUpdate = $this->repository->find($id);
 
+        /**
+         * überprüft ob entity gefunden worden ist
+         */
         if(!$entityToUpdate) {return $this->json("Kommentar mit ID {$id} wurde nicht gefunden.");}
 
 

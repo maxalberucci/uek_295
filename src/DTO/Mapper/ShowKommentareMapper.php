@@ -3,6 +3,7 @@
 namespace App\DTO\Mapper;
 
 use App\DTO\ShowKommentare;
+use OpenApi\Attributes\Property;
 
 class ShowKommentareMapper extends BaseMapper
 {
@@ -13,6 +14,7 @@ class ShowKommentareMapper extends BaseMapper
         $dto = new ShowKommentare();
         $dto->kommentare = $entity->getKommentare();
         $dto->rezensionen = $entity->getRezensionen();
+
 
         return $dto;
     }
