@@ -89,4 +89,18 @@ class KommentareTest extends WebTestCase
 
         $this->assertTrue(200 == $request->getStatusCode());
     }
+
+    public function TestPutKommentare(): void
+    {
+        $updatedDto = new CreateUpdateKommentare();
+        $updatedDto->kommentare = 'Neuer Kommentar';
+        $updatedDto->rezensionen = 1;
+        $updatedDto->produkt_id = 1;
+
+        $putRequest = self::$client->request('PUT', 'api/kommentare/1', [
+            'body' => json_encode($updatedDto),
+        ]);
+
+        $this->assertTrue(200 == $putRequest->getStatusCode());
+    }
 }
