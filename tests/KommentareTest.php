@@ -35,11 +35,23 @@ class KommentareTest extends WebTestCase
 
             $this->expectException(ClientException::class);
 
-            $request = self::$client->request("POST", "/api/kommentare",
+        $request = self::$client->request("POST", "api/login_check",
             [
-                "body" => json_encode($dto)
-            ]
-            );
+                "body" => json_encode([
+                    "username" => "Luca Moser",
+                    "password" => "test"
+                ])
+            ]);
+
+        $token = json_decode($request->getBody())->token;
+
+        $request = self::$client->request("POST", "api/kommentare",
+            [
+                "body" => json_encode($dto),
+                "headers" => [
+                    "Authorization" => "Bearer " . $token
+                ]
+            ]);
 
 
             $response = json_decode($request->getBody());
@@ -62,5 +74,12 @@ class KommentareTest extends WebTestCase
     public function testSomething(): void
     {
         $this->assertTrue(true);
+    }
+
+    public function TestGetProdukt()
+    {
+        $request = self::$client->request('GET', 'api/produkt');
+
+        $this->assertTrue(200 == $request->getStatusCode());
     }
 }
