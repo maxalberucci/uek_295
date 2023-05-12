@@ -16,7 +16,7 @@ class KommentareTest extends WebTestCase
     public static function setUpBeforeClass(): void
     {
         self::$client = new \GuzzleHttp\Client([
-            "base_uri" => "http://localhost:8000"
+            "base_uri" => "http://localhost:8000/index_test.php"
             ]);
 
     $client = self::createClient();
@@ -46,6 +46,16 @@ class KommentareTest extends WebTestCase
 
             $this->assertTrue($request->getStatusCode() == 200);
             $this->assertTrue($response->kommentare == "Test");
+    }
+
+    public function testLoadKommentare()
+    {
+
+        $request = self::$client->request('GET', '/api/kommentare');
+
+        $this->assertTrue($request->getStatusCode() == 200);
+
+        $this->assertIsArray(json_decode($request->getBody()));
     }
 
 
