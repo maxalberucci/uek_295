@@ -103,4 +103,12 @@ class KommentareTest extends WebTestCase
 
         $this->assertTrue(200 == $putRequest->getStatusCode());
     }
+
+    public function testDeleteKommentare(): void
+    {
+        $deleteRequest = self::$client->request('DELETE', 'api/kommentare/2');
+
+        $this->assertTrue(200 == $deleteRequest->getStatusCode());
+    }
+
 }
