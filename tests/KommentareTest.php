@@ -76,6 +76,13 @@ class KommentareTest extends WebTestCase
         $this->assertTrue(true);
     }
 
+    public function TestGetKommentare()
+    {
+        $request = self::$client->request('GET', 'api/kommentare');
+
+        $this->assertTrue(200 == $request->getStatusCode());
+    }
+
     public function TestGetProdukt()
     {
         $request = self::$client->request('GET', 'api/produkt');
