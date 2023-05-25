@@ -110,5 +110,4 @@ class KommentareTest extends WebTestCase
 
         $this->assertTrue(200 == $deleteRequest->getStatusCode());
     }
-
 }

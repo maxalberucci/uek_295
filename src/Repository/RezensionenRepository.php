@@ -18,10 +18,10 @@ class RezensionenRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Rezensionen::class);
+        parent::__construct($registry, RezensionenRepository::class);
     }
 
-    public function save(Rezensionen $entity, bool $flush = false): void
+    public function save(RezensionenRepository $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class RezensionenRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(Rezensionen $entity, bool $flush = false): void
+    public function remove(RezensionenRepository $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 

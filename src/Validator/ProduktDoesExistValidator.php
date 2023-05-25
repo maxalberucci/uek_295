@@ -13,7 +13,7 @@ class ProduktDoesExistValidator extends ConstraintValidator
         $produkt = $this->repository->find($idProdukt);
         If(!$produkt){
             $this->context
-                ->buildViolation($constraint->message)
+                ->buildViolation($constraint->message())
                 ->setParameter("{{produktId}}", $idProdukt)
                 ->addViolation();
         }

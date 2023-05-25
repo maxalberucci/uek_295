@@ -2,7 +2,7 @@
 
 namespace App\DTO;
 
-class CreateUpdateArtikel
+class CreateUpdateProdukt
 {
 
     public ?string $Name = null;

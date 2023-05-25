@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\DTO\CreateUpdateArtikel;
+use App\DTO\CreateUpdateProdukt;
 use App\DTO\CreateUpdateKommentare;
 use App\DTO\Mapper\ShowProduktMapper;
 use App\DTO\ShowProdukt;
@@ -51,7 +51,7 @@ class ProduktController extends AbstractFOSRestController
         /**
          * erstellen eines neuen Produktes
          */
-        $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateArtikel::class, 'json');
+        $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateProdukt::class, 'json');
         $erros = $this->validator->validate($dto, groups: ["create"]);
 
         /**
@@ -64,6 +64,7 @@ class ProduktController extends AbstractFOSRestController
             }
             return $this->json($errosStringArray, status: 400);
         }
+        return $this->json("Wurde Erstellt");
     }
 
     #[Rest\Post('/produkt', name: 'app_produkt_create')]
@@ -74,7 +75,7 @@ class ProduktController extends AbstractFOSRestController
          */
         $dto = $this->serializer->deserialize($request->getContent(), CreateUpdateKommentare::class, "json");
 
-        $errorResponse = $this->validateDTO($dto, "create");
+        $errorResponse = $this->isCsrfTokenValid($dto, "create");
 
         /**
          * fehlermeldung bei fehler
@@ -87,9 +88,9 @@ class ProduktController extends AbstractFOSRestController
         $entity = new Produkt();
         $entity->setName($dto->name);
         $entity->setBestand($dto->rezensionen);
-        $produkt = $this->pRepository->find($dto->produkt_id);
+        $produkt = $this->repository->find($dto->produkt_id);
 
-        $entity->setProdukt($produkt);
+        $entity->setPreis($produkt);
 
         $this->repository->save($entity, true);
 
